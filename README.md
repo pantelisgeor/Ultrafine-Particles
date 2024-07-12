@@ -21,6 +21,15 @@ git clone https://github.com/pantelisgeor/Ultrafine-Particles
 
 **Note** The code provided was developed and tested on a node equipped node with 256 GB of RAM and 2 AMD EPYC Milan 64 core CPUs, running Linux.
 
+### Setting up your environment
+
+You'll need a working Python 3 environment with the following libraries:
+1. Standard Scientific libraries: numpy, pandas, scipy, matplotlib, cartopy, scikit-learn, pyarrow.
+2. MAPIE library (https://mapie.readthedocs.io/)
+3. Spatial data: xarray, netcdf4, rasterio
+4. Other libraries: tqdm, python-wget, cdsapi
+
+
 #### Data Retrieval
 
 The code is written exclusively in Python and uses a number of bash scripts to execute the workload. First, to retrieve the data needed *data.sh* is called. It takes one argument, the path to the directory where the data are to be stored. (The Copernicus Data Store and Copernicus Atmospheric Data Store APIs are utilised, you can register and set up the APIs at cds.climate.copernicus.eu and ads.atmosphere.copernicus.eu, respectively).
