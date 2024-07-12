@@ -26,8 +26,9 @@ git clone https://github.com/pantelisgeor/Ultrafine-Particles
 You'll need a working Python 3 environment with the following libraries:
 1. Standard Scientific libraries: numpy, pandas, scipy, matplotlib, cartopy, scikit-learn, pyarrow.
 2. MAPIE library (https://mapie.readthedocs.io/)
-3. Spatial data: xarray, netcdf4, rasterio
-4. Other libraries: tqdm, python-wget, cdsapi
+3. SHAP library (https://shap.readthedocs.io/)
+4. Spatial data: xarray, netcdf4, rasterio
+5. Other libraries: tqdm, python-wget, cdsapi
 
 
 #### Data Retrieval
