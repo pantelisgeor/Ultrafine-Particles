@@ -19,7 +19,7 @@ You can download a copy of all the files in this repository by cloning the git r
 git clone https://github.com/pantelisgeor/Ultrafine-Particles
 ```
 
-**Note** The code provided was developed and tested on a node equipped node with 256 GB of RAM and 2 AMD EPYC Milan 64 core CPUs, running Linux.
+**Note** The code provided was developed and tested on a node equipped with 256 GB of RAM and 2 AMD EPYC Milan 64 core CPUs, running Linux.
 
 ### Setting up your environment
 
