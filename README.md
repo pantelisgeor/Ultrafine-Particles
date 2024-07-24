@@ -5,7 +5,8 @@ Pantelis Georgiades, Matthias Kohl, Mihalis A. Nicolaou, Theodoros Christoudias,
 
 This repository contains the data and source code to produce the results presented in:
 
-# ADD PAPER CITATION
+## PAPER CITATION
+To be included when DOI is available.
 
 ## Abstract
 
