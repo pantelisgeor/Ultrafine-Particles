@@ -1,4 +1,4 @@
-# Mapping Atmospheric Ultrafine Particles from the Global to the Local Scale
+# High-resolution global ultrafine particle concentrations through a machine learning model and Earth observations
 Pantelis Georgiades, Matthias Kohl, Mihalis A. Nicolaou, Theodoros Christoudias, Andrea Pozzer, Constantine Dovrolis, Jos Lelieveld
 
 **Correspondence:** Pantelis Georgiades (p.georgiades@cyi.ac.cy) and Jos Lelieveld (jos.lelieveld@mpic.de)
