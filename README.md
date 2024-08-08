@@ -6,7 +6,7 @@ Pantelis Georgiades, Matthias Kohl, Mihalis A. Nicolaou, Theodoros Christoudias,
 This repository contains the data and source code to produce the results presented in:
 
 ## PAPER CITATION
-To be included when DOI is available.
+https://doi.org/10.5194/essd-2024-314 (preprint)
 
 ## Abstract
 
