@@ -1,16 +1,16 @@
-# High-resolution global ultrafine particle concentrations through a machine learning model and Earth observations
+# Global high-resolution ultrafine particle number concentrations through data fusion with machine learning
 Pantelis Georgiades, Matthias Kohl, Mihalis A. Nicolaou, Theodoros Christoudias, Andrea Pozzer, Constantine Dovrolis, Jos Lelieveld
 
 **Correspondence:** Pantelis Georgiades (p.georgiades@cyi.ac.cy) and Jos Lelieveld (jos.lelieveld@mpic.de)
 
-This repository contains the data and source code to produce the results presented in:
+This repository contains the data retrieval scripts and source code to produce the results presented in:
 
 ## PAPER CITATION
-https://doi.org/10.5194/essd-2024-314 (preprint)
+
 
 ## Abstract
 
-Atmospheric pollution is a major concern due to its well-documented and detrimental impacts on human health, with millions of excess deaths attributed to it annually. Particulate matter (PM), comprising airborne pollutants in the form of solid and liquid particles suspended in the air, has been particularly concerning. Historically, research has focused on PM with an aerodynamic diameter less than 10 μm (PM10) and 2.5 μm (PM2.5), referred to as coarse and fine particulate matter, respectively. The long term exposure to both classes of PM have been shown to impact human health, being linked to a range of respiratory and cardiovascular complications. Recently, attention has been drawn to the lower end of the size distribution, specifically *ultrafine particles* (UFPs), with an aerodynamic diameter less than  100 nm (PM10). UFPs can deeply infiltrate the respiratory system, reach the bloodstream, and have been increasingly associated with chronic health conditions, including cardiovascular disease. Accurate mapping of UFP concentrations at high spatial resolution is crucial considering strong gradients near the sources. However, due to the relatively recent focus on this class of PM, there is a scarcity of long-term measurements, particularly on the global scale. In this study, we employed a machine learning methodology to produce the first global maps of UFP concentrations at high spatial resolution (1 km) by leveraging limited ground station measureWments worldwide. We trained an XGBoost model to predict annual UFP concentrations for a decade (2010-2019) and utilized the conformal prediction framework to provide reliable prediction intervals. This approach not only fills the current data gaps of global high-resolution UFP concentrations to enable comprehensive, data-informed assessments of the health implications associated with UFP exposure.
+Atmospheric pollution causes millions of excess deaths annually, with particulate matter (PM) being a major concern. While research has traditionally focused on PM<sub>10</sub> and PM<sub>2.5</sub>, ultrafine particles (UFPs, diameter~<~100~nm) have emerged as a critical human health risk due to their ability to penetrate deeply into the respiratory system, transmigrate into the bloodstream and induce systemic health impacts. The total particle number concentration (PNC) serves as a proxy measure for UFP prevalence, as UFPs dominate particle number counts despite contributing minimally to total particle mass. This study presents the first global datasets of PNCs and UFPs at 1 km resolution over land by combining ground station measurements with machine learning. We developed an XGBoost model to predict annual PNC levels from 2010-2019, integrating diverse environmental and anthropogenic variables available at the global scale.
 
 ## Instructions:
 

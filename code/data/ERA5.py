@@ -72,3 +72,118 @@ if __name__ == "__main__":
         ds.to_netcdf("t2m_yearly.nc",
                      encoding={"t2m": {"zlib": True,
                                        "complevel": 6}})
+    
+    # Total precipitation
+    for year in range(2000, 2021, 1):
+        print(f"\nDownloading tp for year {year}.")
+        if os.path.isfile(f"ERA5_{year}_total_precipitatio.nc"):
+            print(f"ERA5_{year}_total_precipitatio.nc exists. . . Skipping")
+            continue
+        try:
+            c.retrieve(
+                "reanalysis-era5-single-levels",
+                {
+                    "product_type": "reanalysis",
+                    "format": "netcdf",
+                    "variable": "total_precipitatio",
+                    "year": str(year),
+                    "month": [
+                        "01", "02", "03", "04", "05", "06",
+                        "07", "08", "09", "10", "11", "12",],
+                    "day": [
+                        "01", "02", "03", "04", "05", "06",
+                        "07", "08", "09", "10", "11", "12",
+                        "13", "14", "15", "16", "17", "18",
+                        "19", "20", "21", "22", "23", "24",
+                        "25", "26", "27", "28", "29", "30", "31", ],
+                    "time": [
+                        "00:00", "01:00", "02:00",
+                        "03:00", "04:00", "05:00",
+                        "06:00", "07:00", "08:00",
+                        "09:00", "10:00", "11:00",
+                        "12:00", "13:00", "14:00",
+                        "15:00", "16:00", "17:00",
+                        "18:00", "19:00", "20:00",
+                        "21:00", "22:00", "23:00",],
+                },
+                f"ERA5_{year}_total_precipitatio.nc")
+        except Exception as e:
+            print(e)
+            continue
+
+    if not os.path.isfile("tp_yearly.nc"):
+        print("Creating yearly averages dataset")
+        # Loop through them and calculate the yearly averages
+        for c, year in enumerate(range(2000, 2021, 1)):
+            print(year)
+            # Read the netcdf into an xarray
+            ds_ = xr.open_dataset(f"ERA5_{year}_total_precipitatio.nc")
+            if c == 0:
+                ds = ds_.resample(time="1Y").sum()
+            else:
+                ds = ds.merge(ds_.resample(time="Y").sum())
+            del ds_, c, year
+            gc.collect()
+
+        # Save it
+        ds.to_netcdf("tp_yearly.nc",
+                     encoding={"tp": {"zlib": True,
+                                      "complevel": 6}})
+        
+    
+    # Boundary Layer Height
+    for year in range(2000, 2021, 1):
+        print(f"\nDownloading blh for year {year}.")
+        if os.path.isfile(f"ERA5_{year}_boundary_layer_height.nc"):
+            print(f"ERA5_{year}_boundary_layer_height.nc exists. . . Skipping")
+            continue
+        try:
+            c.retrieve(
+                "reanalysis-era5-single-levels",
+                {
+                    "product_type": "reanalysis",
+                    "format": "netcdf",
+                    "variable": "boundary_layer_height",
+                    "year": str(year),
+                    "month": [
+                        "01", "02", "03", "04", "05", "06",
+                        "07", "08", "09", "10", "11", "12",],
+                    "day": [
+                        "01", "02", "03", "04", "05", "06",
+                        "07", "08", "09", "10", "11", "12",
+                        "13", "14", "15", "16", "17", "18",
+                        "19", "20", "21", "22", "23", "24",
+                        "25", "26", "27", "28", "29", "30", "31", ],
+                    "time": [
+                        "00:00", "01:00", "02:00",
+                        "03:00", "04:00", "05:00",
+                        "06:00", "07:00", "08:00",
+                        "09:00", "10:00", "11:00",
+                        "12:00", "13:00", "14:00",
+                        "15:00", "16:00", "17:00",
+                        "18:00", "19:00", "20:00",
+                        "21:00", "22:00", "23:00",],
+                },
+                f"ERA5_{year}_boundary_layer_height.nc")
+        except Exception as e:
+            print(e)
+            continue
+
+    if not os.path.isfile("blh_yearly.nc"):
+        print("Creating yearly averages dataset")
+        # Loop through them and calculate the yearly averages
+        for c, year in enumerate(range(2000, 2021, 1)):
+            print(year)
+            # Read the netcdf into an xarray
+            ds_ = xr.open_dataset(f"ERA5_{year}_boundary_layer_height.nc")
+            if c == 0:
+                ds = ds_.resample(time="1Y").mean()
+            else:
+                ds = ds.merge(ds_.resample(time="Y").mean())
+            del ds_, c, year
+            gc.collect()
+
+        # Save it
+        ds.to_netcdf("blh_yearly.nc",
+                     encoding={"blh": {"zlib": True,
+                                       "complevel": 6}})
