@@ -2,6 +2,7 @@
 This script generates the global data for a user defined
 year on the 1x1 km grid for the UFP model inference step.
 """
+
 import xarray as xr
 import numpy as np
 from tqdm import tqdm
@@ -14,18 +15,17 @@ import glob
 import re
 import warnings
 
-warnings.filterwarnings('ignore')
+warnings.filterwarnings("ignore")
 
 parser = argparse.ArgumentParser(
-    description="Arguments to process data for UFP project")
-parser.add_argument("--idx", help="Index of longitude arrays", type=int,
-                    default=None)
-parser.add_argument("--year", help="Year to process data for.", type=int,
-                    default=None)
-parser.add_argument("--path_data", type=str,
-                    help="Path to directory where downloaded data is stored.")
-parser.add_argument("--dest", type=str,
-                    help="Path to save data created.")
+    description="Arguments to process data for UFP project"
+)
+parser.add_argument("--idx", help="Index of longitude arrays", type=int, default=None)
+parser.add_argument("--year", help="Year to process data for.", type=int, default=None)
+parser.add_argument(
+    "--path_data", type=str, help="Path to directory where downloaded data is stored."
+)
+parser.add_argument("--dest", type=str, help="Path to save data created.")
 args = parser.parse_args()
 
 # Paths
@@ -46,10 +46,25 @@ gc.collect()
 lons_ = np.array_split(lons, 50)
 
 
-feats = ["land_1", "land_2", "land_3", "land_4", "land_5", "land_6",
-         "land_7", "no2", "pop", "buildUp", "degreeUrb", "humanSettle",
-         "pm25", "blackCarbon", "carbonDioxide", "carbonMonoxide",
-         "nitrogenOxides"]
+feats = [
+    "land_1",
+    "land_2",
+    "land_3",
+    "land_4",
+    "land_5",
+    "land_6",
+    "land_7",
+    "no2",
+    "pop",
+    "buildUp",
+    "degreeUrb",
+    "humanSettle",
+    "pm25",
+    "blackCarbon",
+    "carbonDioxide",
+    "carbonMonoxide",
+    "nitrogenOxides",
+]
 
 
 # ======================================================================= #
@@ -63,16 +78,15 @@ def get_coords(lons_, lats_, idx):
     return coords
 
 
-def readLand(year, lons, lats,
-             path=f"{path_dat}/land_use"):
+def readLand(year, lons, lats, path=f"{path_dat}/land_use"):
     """
-    Reads the raw land use data for a given year and subsets for the 
+    Reads the raw land use data for a given year and subsets for the
     given coordinates
 
     Args:
         year: Year to retrieve land use data for
         lons: Coordinates of strip to get data for from the
-                corresponding grid 
+                corresponding grid
         path: Directory where land use data is stored
 
     Returns:
@@ -87,12 +101,15 @@ def readLand(year, lons, lats,
     chdir(path)
     # List the geotiff files in the directory
     files_ = glob1(path, "*.tif")
-    years = [int(re.findall(r'\d{4}', x)[0]) for x in files_]
-    year = min(years, key=lambda x: abs(x-year))
+    years = [int(re.findall(r"\d{4}", x)[0]) for x in files_]
+    year = min(years, key=lambda x: abs(x - year))
     # Read the corresponding dataset
-    ds = open_rasterio(files_[years.index(year)]).sel(band=1)\
-        .drop_vars(["band", "spatial_ref"])\
+    ds = (
+        open_rasterio(files_[years.index(year)])
+        .sel(band=1)
+        .drop_vars(["band", "spatial_ref"])
         .rename({"x": "lon", "y": "lat"})
+    )
     # Get the closest coordinate from the land use dataset
     ds_ = ds.sel(lon=slice(lons[0], lons[-1]), lat=slice(lats[0], lats[-1]))
     return ds_
@@ -112,10 +129,10 @@ def map_groups(data, groupings):
     import numpy as np
 
     data = np.stack(
-        [np.stack(
-            [data == int(x) for x in grouping])
-         .sum(axis=0)
-         .astype(bool) * i for i, grouping in groupings.items()]
+        [
+            np.stack([data == int(x) for x in grouping]).sum(axis=0).astype(bool) * i
+            for i, grouping in groupings.items()
+        ]
     ).sum(axis=0)
     return data
 
@@ -130,43 +147,51 @@ def binaryLand(dsLand):
     lons = dsLand.lon.data
     lats = dsLand.lat.data
     dsLand = dsLand.to_array()
-    dsLand_ = xr.Dataset({
-        "land_1": xr.DataArray(
-            data=np.where(dsLand == 1, 1, 0)[0, :, :],
-            dims=["lat", "lon"],
-            coords={"lat": lats, "lon": lons},
-            attrs={"units": "Land Use Binary mask"}),
-        "land_2": xr.DataArray(
-            data=np.where(dsLand == 2, 1, 0)[0, :, :],
-            dims=["lat", "lon"],
-            coords={"lat": lats, "lon": lons},
-            attrs={"units": "Land Use Binary mask"}),
-        "land_3": xr.DataArray(
-            data=np.where(dsLand == 3, 1, 0)[0, :, :],
-            dims=["lat", "lon"],
-            coords={"lat": lats, "lon": lons},
-            attrs={"units": "Land Use Binary mask"}),
-        "land_4": xr.DataArray(
-            data=np.where(dsLand == 4, 1, 0)[0, :, :],
-            dims=["lat", "lon"],
-            coords={"lat": lats, "lon": lons},
-            attrs={"units": "Land Use Binary mask"}),
-        "land_5": xr.DataArray(
-            data=np.where(dsLand == 5, 1, 0)[0, :, :],
-            dims=["lat", "lon"],
-            coords={"lat": lats, "lon": lons},
-            attrs={"units": "Land Use Binary mask"}),
-        "land_6": xr.DataArray(
-            data=np.where(dsLand == 6, 1, 0)[0, :, :],
-            dims=["lat", "lon"],
-            coords={"lat": lats, "lon": lons},
-            attrs={"units": "Land Use Binary mask"}),
-        "land_7": xr.DataArray(
-            data=np.where(dsLand == 7, 1, 0)[0, :, :],
-            dims=["lat", "lon"],
-            coords={"lat": lats, "lon": lons},
-            attrs={"units": "Land Use Binary mask"})
-    }
+    dsLand_ = xr.Dataset(
+        {
+            "land_1": xr.DataArray(
+                data=np.where(dsLand == 1, 1, 0)[0, :, :],
+                dims=["lat", "lon"],
+                coords={"lat": lats, "lon": lons},
+                attrs={"units": "Land Use Binary mask"},
+            ),
+            "land_2": xr.DataArray(
+                data=np.where(dsLand == 2, 1, 0)[0, :, :],
+                dims=["lat", "lon"],
+                coords={"lat": lats, "lon": lons},
+                attrs={"units": "Land Use Binary mask"},
+            ),
+            "land_3": xr.DataArray(
+                data=np.where(dsLand == 3, 1, 0)[0, :, :],
+                dims=["lat", "lon"],
+                coords={"lat": lats, "lon": lons},
+                attrs={"units": "Land Use Binary mask"},
+            ),
+            "land_4": xr.DataArray(
+                data=np.where(dsLand == 4, 1, 0)[0, :, :],
+                dims=["lat", "lon"],
+                coords={"lat": lats, "lon": lons},
+                attrs={"units": "Land Use Binary mask"},
+            ),
+            "land_5": xr.DataArray(
+                data=np.where(dsLand == 5, 1, 0)[0, :, :],
+                dims=["lat", "lon"],
+                coords={"lat": lats, "lon": lons},
+                attrs={"units": "Land Use Binary mask"},
+            ),
+            "land_6": xr.DataArray(
+                data=np.where(dsLand == 6, 1, 0)[0, :, :],
+                dims=["lat", "lon"],
+                coords={"lat": lats, "lon": lons},
+                attrs={"units": "Land Use Binary mask"},
+            ),
+            "land_7": xr.DataArray(
+                data=np.where(dsLand == 7, 1, 0)[0, :, :],
+                dims=["lat", "lon"],
+                coords={"lat": lats, "lon": lons},
+                attrs={"units": "Land Use Binary mask"},
+            ),
+        }
     )
     return dsLand_
 
@@ -186,8 +211,7 @@ def closest_node(node, nodes):
     return nodes[closest_index]
 
 
-def readNO2(year, lats_, lons_,
-            path_dat_=f"{path_dat}/NO2_1km"):
+def readNO2(year, lats_, lons_, path_dat_=f"{path_dat}/NO2_1km"):
     """
     Returns the NO2 data for the given year and longitudes/latitudes
     """
@@ -200,38 +224,43 @@ def readNO2(year, lats_, lons_,
 
     # List the geotif files in the directory
     files = glob1(path_dat_, "*.tif")
-    files = DataFrame({"year": [int(re.search(r"(\d{4})", x).group(1))
-                                for x in files],
-                       "filename": files})
+    files = DataFrame(
+        {
+            "year": [int(re.search(r"(\d{4})", x).group(1)) for x in files],
+            "filename": files,
+        }
+    )
     files = files.sort_values(by="year", ascending=True).reset_index(drop=True)
     # If the year is not in the list, load the closest year
     if year not in files.year.unique():
-        year = files.year.values[argmin([abs(year-x) for x
-                                         in files.year.values])]
+        year = files.year.values[argmin([abs(year - x) for x in files.year.values])]
     if path.isfile(f"{path_dat_}/{year}_final_1km.nc"):
         # Read the tif file corresponding to this year
-        ds = open_dataset(f"{path_dat_}/{year}_final_1km.nc")\
-            .sel(lon=slice(lons_[0], lons_[-1]),
-                 lat=slice(lats_[0], lats_[-1]))
+        ds = open_dataset(f"{path_dat_}/{year}_final_1km.nc").sel(
+            lon=slice(lons_[0], lons_[-1]), lat=slice(lats_[0], lats_[-1])
+        )
         return ds
     else:
-        ds = open_rasterio(f"{path_dat_}/{year}_final_1km.tif")\
-            .sel(band=1).drop_vars(["band", "spatial_ref"])\
-            .rename({"x": "lon", "y": "lat"})\
+        ds = (
+            open_rasterio(f"{path_dat_}/{year}_final_1km.tif")
+            .sel(band=1)
+            .drop_vars(["band", "spatial_ref"])
+            .rename({"x": "lon", "y": "lat"})
             .to_dataset(name="no2")
+        )
         # Save it
-        ds.to_netcdf(f"{path_dat_}/{year}_final_1km.nc",
-                     encoding={"no2": {"zlib": True,
-                                       "complevel": 5}})
+        ds.to_netcdf(
+            f"{path_dat_}/{year}_final_1km.nc",
+            encoding={"no2": {"zlib": True, "complevel": 5}},
+        )
         del ds
-        ds = open_dataset(f"{path_dat_}/{year}_final_1km.nc")\
-            .sel(lon=slice(lons_[0], lons_[-1]),
-                 lat=slice(lats_[0], lats_[-1]))
+        ds = open_dataset(f"{path_dat_}/{year}_final_1km.nc").sel(
+            lon=slice(lons_[0], lons_[-1]), lat=slice(lats_[0], lats_[-1])
+        )
         return ds
 
 
-def readPM25(year, lats_, lons_,
-             path_=f"{path_dat}/PM25"):
+def readPM25(year, lats_, lons_, path_=f"{path_dat}/PM25"):
     """
     Read the PM2.5 dataset for the given year and indexes it
     wrt to the latitudes/longitudes specified.
@@ -241,37 +270,48 @@ def readPM25(year, lats_, lons_,
     from xarray import open_dataset
 
     dat = glob1(path_, "*.nc")
-    dat = DataFrame({
-        "year": [int(x.split("-")[-1][:4]) for x in dat],
-        "path": [f"{path_}/{x}" for x in dat]
-    }).sort_values(by="year").reset_index(drop=True)
+    dat = (
+        DataFrame(
+            {
+                "year": [int(x.split("-")[-1][:4]) for x in dat],
+                "path": [f"{path_}/{x}" for x in dat],
+            }
+        )
+        .sort_values(by="year")
+        .reset_index(drop=True)
+    )
     # Load the netcdf for the year into an xarray
-    ds = open_dataset(dat.loc[dat.year == year].path.item())\
-        .sel(lat=slice(lats_[-1]+0.05, lats_[0]-0.05),
-             lon=slice(lons_[0]-0.05, lons_[-1]+0.05))
+    ds = open_dataset(dat.loc[dat.year == year].path.item()).sel(
+        lat=slice(lats_[-1] + 0.05, lats_[0] - 0.05),
+        lon=slice(lons_[0] - 0.05, lons_[-1] + 0.05),
+    )
     return ds
 
 
-def readEmissions(year, lats_, lons_,
-                  path_=f"{path_dat}/CAMS_emissions/interpolated_"):
+def readEmissions(year, lats_, lons_, path_=f"{path_dat}/CAMS_emissions/interpolated_"):
     from xarray import open_dataset
     from glob import glob1
     import pandas as pd
 
     # List the netcdf files
     filesEm = glob1(path_, "*.nc")
-    filesEm = pd.DataFrame({"year": [int(x.split(".")[0]) for x in filesEm],
-                            "path": [f"{path_}/{x}" for x in filesEm]})\
-        .sort_values(by="year", ascending=True)\
+    filesEm = (
+        pd.DataFrame(
+            {
+                "year": [int(x.split(".")[0]) for x in filesEm],
+                "path": [f"{path_}/{x}" for x in filesEm],
+            }
+        )
+        .sort_values(by="year", ascending=True)
         .reset_index(drop=True)
-    ds = open_dataset(filesEm.loc[filesEm.year == year].path.item())\
-        .sel(lat=slice(lats_[-1], lats_[0]),
-             lon=slice(lons_[0], lons_[-1]))
+    )
+    ds = open_dataset(filesEm.loc[filesEm.year == year].path.item()).sel(
+        lat=slice(lats_[-1], lats_[0]), lon=slice(lons_[0], lons_[-1])
+    )
     return ds
 
 
-def readPop(year, lats_, lons_,
-            path_=f"{path_dat}/world_pop"):
+def readPop(year, lats_, lons_, path_=f"{path_dat}/world_pop"):
     from xarray import open_dataset
     from glob import glob1
     from numpy import argmin
@@ -279,18 +319,18 @@ def readPop(year, lats_, lons_,
 
     # List the population datasets (geotiffs)
     files = glob1(path_, "*.nc")
-    years = [int(re.findall(r'\d{4}', x)[0]) for x in files]
+    years = [int(re.findall(r"\d{4}", x)[0]) for x in files]
     # If the year is not in the list, load the closest year
     if year not in years:
-        year = years[argmin([abs(year-x) for x in years])]
+        year = years[argmin([abs(year - x) for x in years])]
     # Read the corresponding dataset
-    ds = open_dataset(f"{path_}/{files[years.index(year)]}")\
-        .sel(lat=slice(lats_[0], lats_[-1]), lon=slice(lons_[0], lons_[-1]))
+    ds = open_dataset(f"{path_}/{files[years.index(year)]}").sel(
+        lat=slice(lats_[0], lats_[-1]), lon=slice(lons_[0], lons_[-1])
+    )
     return ds
 
 
-def readBuildUp(year, lats_, lons_,
-                path_=f"{path_dat}/GHSL/builtup_volume"):
+def readBuildUp(year, lats_, lons_, path_=f"{path_dat}/GHSL/builtup_volume"):
     from glob import glob1
     from numpy import argmin
     from xarray import open_dataset
@@ -300,13 +340,12 @@ def readBuildUp(year, lats_, lons_,
 
     # List the population datasets (geotiffs)
     files = glob1(path_, "*.tif")
-    years = [int(re.findall(r'\d{4}', x)[0]) for x in files]
+    years = [int(re.findall(r"\d{4}", x)[0]) for x in files]
     # If the year is not in the list, load the closest year
     if year not in years:
-        year = years[argmin([abs(year-x) for x in years])]
+        year = years[argmin([abs(year - x) for x in years])]
     # Read the dataset
-    if not path.isfile(
-            f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}"):
+    if not path.isfile(f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}"):
         ds = open_rasterio(f"{path_}/{files[years.index(year)]}")
         # Reproject to EPSG4326 and save as a netcdf
         ds = ds.rio.reproject("EPSG:4326")
@@ -315,15 +354,15 @@ def readBuildUp(year, lats_, lons_,
         # Save it to save time next time
         ds.to_netcdf(
             f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}",
-            encoding={"buildUp": {"dtype": "int32", "zlib": True}})
-    ds = open_dataset(
-        f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}")\
-        .sel(lat=slice(lats_[0], lats_[-1]), lon=slice(lons_[0], lons_[-1]))
+            encoding={"buildUp": {"dtype": "int32", "zlib": True}},
+        )
+    ds = open_dataset(f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}").sel(
+        lat=slice(lats_[0], lats_[-1]), lon=slice(lons_[0], lons_[-1])
+    )
     return ds
 
 
-def readDegUrb(year, lats_, lons_,
-               path_=f"{path_dat}/GHSL/degree_urbanisation"):
+def readDegUrb(year, lats_, lons_, path_=f"{path_dat}/GHSL/degree_urbanisation"):
     from os import path
     from xarray import open_dataset
     from rioxarray import open_rasterio
@@ -333,14 +372,13 @@ def readDegUrb(year, lats_, lons_,
 
     # List the population datasets (geotiffs)
     files = glob1(path_, "*.tif")
-    years = [int(re.findall(r'\d{4}', x)[0]) for x in files]
+    years = [int(re.findall(r"\d{4}", x)[0]) for x in files]
     # If the year is not in the list, load the closest year
     if year not in years:
-        year = years[argmin([abs(year-x) for x in years])]
+        year = years[argmin([abs(year - x) for x in years])]
     # Read the dataset - If the reprojected netcdf is not yet computed, do it
     # and save it with the same filename but different extension
-    if not path.isfile(
-            f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}"):
+    if not path.isfile(f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}"):
         ds = open_rasterio(files[years.index(year)])
         # Reproject to EPSG4326 and save as a netcdf
         ds = ds.rio.reproject("EPSG:4326")
@@ -351,16 +389,16 @@ def readDegUrb(year, lats_, lons_,
         # Save it to save time next time
         ds.to_netcdf(
             f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}",
-            encoding={"degUrb": {"dtype": "int16", "zlib": True}})
+            encoding={"degUrb": {"dtype": "int16", "zlib": True}},
+        )
     # Read the netcdf file
-    ds = open_dataset(
-        f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}")\
-        .sel(lat=slice(lats_[0], lats_[-1]), lon=slice(lons_[0], lons_[-1]))
+    ds = open_dataset(f"{path_}/{files[years.index(year)].replace('.tif', '.nc')}").sel(
+        lat=slice(lats_[0], lats_[-1]), lon=slice(lons_[0], lons_[-1])
+    )
     return ds
 
 
-def readHuSet(year, lats_, lons_, idx,
-              path_=f"{path_dat}/GHSL/human_settlement_wsg84"):
+def readHuSet(year, lats_, lons_, idx, path_=f"{path_dat}/GHSL/human_settlement_wsg84"):
     from glob import glob1
     from numpy import argmin
     import re
@@ -368,30 +406,35 @@ def readHuSet(year, lats_, lons_, idx,
 
     # List the population datasets (geotiffs)
     files = glob1(path_, "*.tif")
-    years = [int(re.findall(r'\d{4}', x)[0]) for x in files]
+    years = [int(re.findall(r"\d{4}", x)[0]) for x in files]
     # If the year is not in the list, load the closest year
     if year not in years:
-        year = years[argmin([abs(year-x) for x in years])]
-    if not os.path.isfile(f"{path_}/{files[years.index(year)]}"
-                          .replace(".tif", f"_idx_{idx}.nc")):
+        year = years[argmin([abs(year - x) for x in years])]
+    if not os.path.isfile(
+        f"{path_}/{files[years.index(year)]}".replace(".tif", f"_idx_{idx}.nc")
+    ):
         # Read the netcdf file
-        ds = open_dataset(
-            f"{path_}/{files[years.index(year)]}")\
-            .sel(band=1).squeeze().drop_vars(["band", "spatial_ref"])\
-            .rename({"x": "lon", "y": "lat", "band_data": "HumSet"})\
-            .sel(lat=slice(lats_[0], lats_[-1]),
-                 lon=slice(lons_[0], lons_[-1]))
-        ds.to_netcdf(f"{path_}/{files[years.index(year)]}"
-                     .replace(".tif", f"_idx_{idx}.nc"),
-                     encoding={"HumSet": {"zlib": True,
-                                          "complevel": 5}})
+        ds = (
+            open_dataset(f"{path_}/{files[years.index(year)]}")
+            .sel(band=1)
+            .squeeze()
+            .drop_vars(["band", "spatial_ref"])
+            .rename({"x": "lon", "y": "lat", "band_data": "HumSet"})
+            .sel(lat=slice(lats_[0], lats_[-1]), lon=slice(lons_[0], lons_[-1]))
+        )
+        ds.to_netcdf(
+            f"{path_}/{files[years.index(year)]}".replace(".tif", f"_idx_{idx}.nc"),
+            encoding={"HumSet": {"zlib": True, "complevel": 5}},
+        )
         del ds
         gc.collect()
-        ds = open_dataset(f"{path_}/{files[years.index(year)]}"
-                          .replace(".tif", f"_idx_{idx}.nc"))
+        ds = open_dataset(
+            f"{path_}/{files[years.index(year)]}".replace(".tif", f"_idx_{idx}.nc")
+        )
     else:
-        ds = open_dataset(f"{path_}/{files[years.index(year)]}"
-                          .replace(".tif", f"_idx_{idx}.nc"))
+        ds = open_dataset(
+            f"{path_}/{files[years.index(year)]}".replace(".tif", f"_idx_{idx}.nc")
+        )
     return ds
 
 
@@ -418,16 +461,56 @@ def adjust_longitude(dataset: xr.Dataset) -> xr.Dataset:
     return dataset
 
 
-def read2t(year, lats_, lons_,
-           path_=f"{path_dat}/ERA5/t2m_yearly.nc"):
+def read2t(year, lats_, lons_, path_=f"{path_dat}/ERA5/t2m_yearly.nc"):
     # Read the dataset into an xarray
-    ds = xr.open_dataset(path_).rename({"longitude": "lon",
-                                        "latitude": "lat"})
+    ds = xr.open_dataset(path_).rename({"longitude": "lon", "latitude": "lat"})
     ds = adjust_longitude(ds)
 
-    ds = ds.sel(time=f"{year}-12-31", lat=slice(lats_[0], lats_[-1]),
-                lon=slice(lons_[0], lons_[-1])).squeeze()\
+    ds = (
+        ds.sel(
+            time=f"{year}-12-31",
+            lat=slice(lats_[0], lats_[-1]),
+            lon=slice(lons_[0], lons_[-1]),
+        )
+        .squeeze()
         .drop_vars("time")
+    )
+    gc.collect()
+    return ds
+
+
+def readtp(year, lats_, lons_, path_=f"{path_dat}/ERA5/tp_yearly.nc"):
+    # Read the dataset into an xarray
+    ds = xr.open_dataset(path_).rename({"longitude": "lon", "latitude": "lat"})
+    ds = adjust_longitude(ds)
+
+    ds = (
+        ds.sel(
+            time=f"{year}-12-31",
+            lat=slice(lats_[0], lats_[-1]),
+            lon=slice(lons_[0], lons_[-1]),
+        )
+        .squeeze()
+        .drop_vars("time")
+    )
+    gc.collect()
+    return ds
+
+
+def readblh(year, lats_, lons_, path_=f"{path_dat}/ERA5/blh_yearly.nc"):
+    # Read the dataset into an xarray
+    ds = xr.open_dataset(path_).rename({"longitude": "lon", "latitude": "lat"})
+    ds = adjust_longitude(ds)
+
+    ds = (
+        ds.sel(
+            time=f"{year}-12-31",
+            lat=slice(lats_[0], lats_[-1]),
+            lon=slice(lons_[0], lons_[-1]),
+        )
+        .squeeze()
+        .drop_vars("time")
+    )
     gc.collect()
     return ds
 
@@ -443,11 +526,18 @@ os.makedirs(path_infer, exist_ok=True)
 try:
     if not args.year:
         dats_ = glob.glob1(path_infer, "*.parquet")
-        dats_ = pd.DataFrame({
-            "year": [int(x.split("_")[0]) for x in dats_],
-            "idx": [int(x.split("_")[-1].replace(".parquet", ""))
-                    for x in dats_],
-        }).sort_values(by=["year", "idx"]).reset_index(drop=True)
+        dats_ = (
+            pd.DataFrame(
+                {
+                    "year": [int(x.split("_")[0]) for x in dats_],
+                    "idx": [
+                        int(x.split("_")[-1].replace(".parquet", "")) for x in dats_
+                    ],
+                }
+            )
+            .sort_values(by=["year", "idx"])
+            .reset_index(drop=True)
+        )
         year, idx = dats_.year.values[-1], dats_.idx.values[-1] + 1
         if idx == 50:
             year, idx = year + 1, 0
@@ -473,21 +563,18 @@ if not os.path.isfile(f"{path_dest}/land/{year}_{idx}.nc"):
     gc.collect()
     # Save it compressed
     os.makedirs(f"{path_dest}/land", exist_ok=True)
-    dsLand.to_netcdf(f"{path_dest}/land/{year}_{idx}.nc",
-                     encoding={"land_1": {"dtype": int, "zlib": True,
-                               "complevel": 6},
-                               "land_2": {"dtype": int, "zlib": True,
-                                          "complevel": 6},
-                               "land_3": {"dtype": int, "zlib": True,
-                                          "complevel": 6},
-                               "land_4": {"dtype": int, "zlib": True,
-                                          "complevel": 6},
-                               "land_5": {"dtype": int, "zlib": True,
-                                          "complevel": 6},
-                               "land_6": {"dtype": int, "zlib": True,
-                                          "complevel": 6},
-                               "land_7": {"dtype": int, "zlib": True,
-                                          "complevel": 6}})
+    dsLand.to_netcdf(
+        f"{path_dest}/land/{year}_{idx}.nc",
+        encoding={
+            "land_1": {"dtype": int, "zlib": True, "complevel": 6},
+            "land_2": {"dtype": int, "zlib": True, "complevel": 6},
+            "land_3": {"dtype": int, "zlib": True, "complevel": 6},
+            "land_4": {"dtype": int, "zlib": True, "complevel": 6},
+            "land_5": {"dtype": int, "zlib": True, "complevel": 6},
+            "land_6": {"dtype": int, "zlib": True, "complevel": 6},
+            "land_7": {"dtype": int, "zlib": True, "complevel": 6},
+        },
+    )
 else:
     dsLand = xr.open_dataset(f"{path_dest}/land/{year}_{idx}.nc")
 
@@ -497,14 +584,15 @@ def getLand(coords_, grid_size=10, dsLand=dsLand):
     Function to return the land use for the specified grid point
     """
     # Get the closest coordinate from the land use dataset
-    ds_ = dsLand.sel(lat=slice(coords_[0]+0.012, coords_[0]-0.012),
-                     lon=slice(coords_[1]-0.012, coords_[1]+0.012))
-    coordsLand = [[lat, lon] for lat in ds_.lat.values for lon
-                  in ds_.lon.values]
+    ds_ = dsLand.sel(
+        lat=slice(coords_[0] + 0.012, coords_[0] - 0.012),
+        lon=slice(coords_[1] - 0.012, coords_[1] + 0.012),
+    )
+    coordsLand = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
     if len(coordsLand) == 0:
         df = pd.DataFrame({"year": [year]})
         for i in range(0, 7):
-            df[f"land_{i+1}"] = None
+            df[f"land_{i + 1}"] = None
             del i
         return df
     # Get the closest coordinate from the land use dataset
@@ -512,8 +600,7 @@ def getLand(coords_, grid_size=10, dsLand=dsLand):
         coordClose = closest_node(coords_, coordsLand)
     except Exception as e:
         print(coords_, e)
-        ds_temp = dsLand.sel(lat=coords_[0], lon=coords_[1],
-                             method="nearest")
+        ds_temp = dsLand.sel(lat=coords_[0], lon=coords_[1], method="nearest")
         coordClose = dsLand.lat.item(), dsLand.lon.item()
         del ds_temp
     # Get the index of the lat and lon from ds_temp to the corresponding
@@ -523,33 +610,33 @@ def getLand(coords_, grid_size=10, dsLand=dsLand):
     y_idx = 5 if y_idx < 5 else y_idx
     x_idx = 5 if x_idx < 5 else x_idx
     # Get the lats and lons around the station with specified grid_size
-    lats = ds_.lat.values[int(y_idx-(grid_size/2)):int(y_idx+(grid_size/2))]
-    lons = ds_.lon.values[int(x_idx-(grid_size/2)):int(x_idx+(grid_size/2))]
+    lats = ds_.lat.values[int(y_idx - (grid_size / 2)) : int(y_idx + (grid_size / 2))]
+    lons = ds_.lon.values[int(x_idx - (grid_size / 2)) : int(x_idx + (grid_size / 2))]
     # Select the coordinate sets above
-    ds_ = ds_.sel(lon=slice(lons.min(), lons.max()),
-                  lat=slice(lats.max(), lats.min()))
+    ds_ = ds_.sel(lon=slice(lons.min(), lons.max()), lat=slice(lats.max(), lats.min()))
     # Calculate the percentage of each land class in the ds_ xarray
     # len(lats)*len(lons)  # Total number of grid cells
     totalCells = grid_size**2
     df = pd.DataFrame({"year": [year]})
     for i in range(0, 7):
-        df[f"land_{i+1}"] = ds_[f"land_{i+1}"].sum().item() / totalCells
+        df[f"land_{i + 1}"] = ds_[f"land_{i + 1}"].sum().item() / totalCells
         del i
     return df
 
 
 if not os.path.isfile(f"{path_dest}/land/{year}_{idx}.parquet"):
     print("\t-------------\n\tLand Use\n\t-------------")
-    dfLand = pd.concat(process_map(getLand, coords, max_workers=20,
-                                   chunksize=len(coords)//100))
+    dfLand = pd.concat(
+        process_map(getLand, coords, max_workers=20, chunksize=len(coords) // 100)
+    )
     gc.collect()
     dfLand = dfLand.reset_index(drop=True)
     gc.collect()
-    dfLand = pd.concat([pd.DataFrame(coords, columns=["lat", "lon"]),
-                        dfLand], axis=1)
+    dfLand = pd.concat([pd.DataFrame(coords, columns=["lat", "lon"]), dfLand], axis=1)
     gc.collect()
-    dfLand.to_parquet(f"{path_dest}/land/{year}_{idx}.parquet",
-                      compression="gzip", index=False)
+    dfLand.to_parquet(
+        f"{path_dest}/land/{year}_{idx}.parquet", compression="gzip", index=False
+    )
     gc.collect()
 else:
     dfLand = pd.read_parquet(f"{path_dest}/land/{year}_{idx}.parquet")
@@ -576,10 +663,11 @@ def getNO2(coords_, ds=dsNO2):
     """
     try:
         # Get the closest coordinates from the NO2 dataset
-        ds_ = ds.sel(lon=slice(coords_[1] - 0.05, coords_[1] + 0.05),
-                     lat=slice(coords_[0] + 0.05, coords_[0] - 0.05))
-        coordsNO2 = [[lat, lon] for lat in ds_.lat.values for
-                     lon in ds_.lon.values]
+        ds_ = ds.sel(
+            lon=slice(coords_[1] - 0.05, coords_[1] + 0.05),
+            lat=slice(coords_[0] + 0.05, coords_[0] - 0.05),
+        )
+        coordsNO2 = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
         # Get the closest coordinate from the NO2 dataset
         coordClose = closest_node(coords_, coordsNO2)
         # Get the NO2 concentration for the coordClose coordinate
@@ -591,8 +679,7 @@ def getNO2(coords_, ds=dsNO2):
 
 
 # Apply the function to all the coordinates
-no2 = process_map(getNO2, coords, max_workers=128,
-                  chunksize=len(coords)//512)
+no2 = process_map(getNO2, coords, max_workers=128, chunksize=len(coords) // 512)
 # Add it to the inital dataframe
 dfLand = dfLand.assign(no2=no2)
 del no2, getNO2, dsNO2
@@ -608,10 +695,11 @@ dsPM25 = readPM25(year, lats_=lats_, lons_=lons_[idx])
 
 def getPM25(coords_, dsPM25=dsPM25):
     # Get the closest coordinate from the PM2.5 dataset
-    ds_ = dsPM25.sel(lat=slice(coords_[0]-0.05, coords_[0]+0.05),
-                     lon=slice(coords_[1]-0.05, coords_[1]+0.05))
-    coordsPM25 = [[lat, lon] for lat in ds_.lat.values for lon
-                  in ds_.lon.values]
+    ds_ = dsPM25.sel(
+        lat=slice(coords_[0] - 0.05, coords_[0] + 0.05),
+        lon=slice(coords_[1] - 0.05, coords_[1] + 0.05),
+    )
+    coordsPM25 = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
     if len(coordsPM25) == 0:
         return np.nan
     try:
@@ -625,8 +713,7 @@ def getPM25(coords_, dsPM25=dsPM25):
 
 
 # Apply the function to get PM2.5 to all the coordinates
-pm25 = process_map(getPM25, coords, max_workers=128,
-                   chunksize=len(coords)//512)
+pm25 = process_map(getPM25, coords, max_workers=128, chunksize=len(coords) // 512)
 # Add it to the initial dataframe
 dfLand = dfLand.assign(pm25=pm25)
 del pm25, getPM25, dsPM25
@@ -643,18 +730,23 @@ def getEmissions(coords_, dsEm=dsEm):
     # Subset for the specified coordinates etc. . .
     try:
         # Read the emissions dataset for the year
-        ds_ = dsEm.sel(lat=slice(coords_[0]-0.02, coords_[0]+0.02),
-                       lon=slice(coords_[1]-0.02, coords_[1]+0.02))
-        coordsEm_ = [[lat, lon] for lat in ds_.lat.values for lon
-                     in ds_.lon.values]
+        ds_ = dsEm.sel(
+            lat=slice(coords_[0] - 0.02, coords_[0] + 0.02),
+            lon=slice(coords_[1] - 0.02, coords_[1] + 0.02),
+        )
+        coordsEm_ = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
         # Get the closest coordinate from the land use dataset
         coordClose = closest_node(coords_, coordsEm_)
         # Get the data for the corresponding grid cell
         ds_ = ds_.sel(lat=coordClose[0], lon=coordClose[1])
         # Put the data to return in a list
-        dat_ret = list(ds_[["black-carbon", "carbon-dioxide",
-                            "carbon-monoxide", "nitrogen-oxides"]]
-                       .to_array().values)
+        dat_ret = list(
+            ds_[
+                ["black-carbon", "carbon-dioxide", "carbon-monoxide", "nitrogen-oxides"]
+            ]
+            .to_array()
+            .values
+        )
     except Exception:
         dat_ret = [np.nan, np.nan, np.nan, np.nan]
     return dat_ret
@@ -663,11 +755,10 @@ def getEmissions(coords_, dsEm=dsEm):
 # Apply the function to get the emissions for all the coordinates
 # dfEm = pd.concat(process_map(getEmissions, coords, max_workers=85,
 #                              chunksize=len(coords)//260))
-dfEm = pd.DataFrame(process_map(getEmissions, coords, max_workers=128,
-                                chunksize=len(coords)//512),
-                    columns=["blackCarbon", "carbonDioxide",
-                             "carbonMonoxide",
-                             "nitrogenOxides"])
+dfEm = pd.DataFrame(
+    process_map(getEmissions, coords, max_workers=128, chunksize=len(coords) // 512),
+    columns=["blackCarbon", "carbonDioxide", "carbonMonoxide", "nitrogenOxides"],
+)
 # Add it to the dataframe
 dfLand = pd.concat([dfLand, dfEm.reset_index(drop=True)], axis=1)
 del dfEm, getEmissions, dsEm
@@ -684,10 +775,11 @@ dsPop = readPop(year=year, lats_=lats_, lons_=lons_[idx])
 def getPop(coords_, dsPop=dsPop):
     try:
         # Get the closest coordinate from the land use dataset
-        ds_ = dsPop.sel(lat=slice(coords_[0]+0.02, coords_[0]-0.02),
-                        lon=slice(coords_[1]-0.02, coords_[1]+0.02))
-        coordsPop = [[lat, lon] for lat in ds_.lat.values for lon
-                     in ds_.lon.values]
+        ds_ = dsPop.sel(
+            lat=slice(coords_[0] + 0.02, coords_[0] - 0.02),
+            lon=slice(coords_[1] - 0.02, coords_[1] + 0.02),
+        )
+        coordsPop = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
         # Get the closest coordinate from the land use dataset
         coordClose = closest_node(coords_, coordsPop)
         # Get the data for the corresponding grid cell
@@ -699,8 +791,7 @@ def getPop(coords_, dsPop=dsPop):
 
 
 # Apply the function to get the population for all the grid points
-pop = process_map(getPop, coords, max_workers=128,
-                  chunksize=len(coords)//512)
+pop = process_map(getPop, coords, max_workers=128, chunksize=len(coords) // 512)
 # Add it to the dataframe
 dfLand = dfLand.assign(pop=pop)
 del pop, getPop, dsPop
@@ -714,10 +805,11 @@ dsBU = readBuildUp(year=year, lats_=lats_, lons_=lons_[idx])
 
 def buildVolume(coords_, dsBU=dsBU):
     # Get the closest coordinate from the land use dataset
-    ds_ = dsBU.sel(lat=slice(coords_[0]+0.02, coords_[0]-0.02),
-                   lon=slice(coords_[1]-0.02, coords_[1]+0.02))
-    coordsBuildUp = [[lat, lon] for lat in ds_.lat.values for lon
-                     in ds_.lon.values]
+    ds_ = dsBU.sel(
+        lat=slice(coords_[0] + 0.02, coords_[0] - 0.02),
+        lon=slice(coords_[1] - 0.02, coords_[1] + 0.02),
+    )
+    coordsBuildUp = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
     # Get the closest coordinate from the land use dataset
     coordClose = closest_node(coords_, coordsBuildUp)
     # Get the data for the corresponding grid cell
@@ -726,8 +818,9 @@ def buildVolume(coords_, dsBU=dsBU):
 
 
 # Apply the function to get the population for all the grid points
-buildUp = process_map(buildVolume, coords, max_workers=128,
-                      chunksize=len(coords)//512)
+buildUp = process_map(
+    buildVolume, coords, max_workers=128, chunksize=len(coords) // 512
+)
 # Add it to the dataframe
 dfLand = dfLand.assign(buildUp=buildUp)
 del dsBU, buildVolume, buildUp
@@ -741,10 +834,11 @@ dsDegUr = readDegUrb(year=year, lats_=lats_, lons_=lons_[idx])
 
 def degreeUrban(coords_, dsDegUr=dsDegUr):
     # Get the closest coordinate from the land use dataset
-    ds_ = dsDegUr.sel(lat=slice(coords_[0]+0.03, coords_[0]-0.03),
-                      lon=slice(coords_[1]-0.03, coords_[1]+0.03))
-    coordsDegreeUrban = [[lat, lon] for lat in ds_.lat.values for lon
-                         in ds_.lon.values]
+    ds_ = dsDegUr.sel(
+        lat=slice(coords_[0] + 0.03, coords_[0] - 0.03),
+        lon=slice(coords_[1] - 0.03, coords_[1] + 0.03),
+    )
+    coordsDegreeUrban = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
     # Get the closest coordinate from the land use dataset
     coordClose = closest_node(coords_, coordsDegreeUrban)
     # Get the data for the corresponding grid cell
@@ -753,8 +847,7 @@ def degreeUrban(coords_, dsDegUr=dsDegUr):
 
 
 # Apply the function to get the population for all the grid points
-degUrb = process_map(degreeUrban, coords, max_workers=128,
-                     chunksize=len(coords)//512)
+degUrb = process_map(degreeUrban, coords, max_workers=128, chunksize=len(coords) // 512)
 # Add it to the dataframe
 dfLand = dfLand.assign(degreeUrb=degUrb)
 del degUrb, degreeUrban, dsDegUr
@@ -768,10 +861,11 @@ dsHS = readHuSet(year=year, lats_=lats_, lons_=lons_[idx], idx=idx)
 
 def humanSettle(coords_, dsHS=dsHS):
     # Get the closest coordinate from the land use dataset
-    ds_ = dsHS.sel(lat=slice(coords_[0]+0.02, coords_[0]-0.02),
-                   lon=slice(coords_[1]-0.02, coords_[1]+0.02))
-    coordsDegreeUrban = [[lat, lon] for lat in ds_.lat.values for lon
-                         in ds_.lon.values]
+    ds_ = dsHS.sel(
+        lat=slice(coords_[0] + 0.02, coords_[0] - 0.02),
+        lon=slice(coords_[1] - 0.02, coords_[1] + 0.02),
+    )
+    coordsDegreeUrban = [[lat, lon] for lat in ds_.lat.values for lon in ds_.lon.values]
     # Get the closest coordinate from the land use dataset
     coordClose = closest_node(coords_, coordsDegreeUrban)
     # Get the data for the corresponding grid cell
@@ -780,8 +874,7 @@ def humanSettle(coords_, dsHS=dsHS):
 
 
 # Apply the function to get the population for all the grid points
-HumSet = process_map(humanSettle, coords, max_workers=128,
-                     chunksize=len(coords)//512)
+HumSet = process_map(humanSettle, coords, max_workers=128, chunksize=len(coords) // 512)
 # Add it to the dataframe
 dfLand = dfLand.assign(humanSettle=HumSet)
 del dsHS, HumSet, humanSettle
@@ -795,20 +888,58 @@ ds2t = read2t(year, lats_, lons_=lons_[idx])
 
 def get2t(coords_, ds2t=ds2t):
     # Get the data for the corresponding grid cell
-    return ds2t.sel(lat=coords_[0], lon=coords_[1],
-                    method="nearest").t2m.item()
+    return ds2t.sel(lat=coords_[0], lon=coords_[1], method="nearest").t2m.item()
 
 
 # Apply the function to get the temperature dataset
 # for all the grid points
-t2m = process_map(get2t, coords, max_workers=128,
-                  chunksize=len(coords)//512)
+t2m = process_map(get2t, coords, max_workers=128, chunksize=len(coords) // 512)
 # Add it to the dataframe
 dfLand = dfLand.assign(t2m=t2m)
 del ds2t, get2t, t2m
 gc.collect()
 
 
+# ======================================================================= #
+# ------------------------- Total Precipitation ------------------------- #
+print("\t-------------\n\t2m Temperature\n\t-------------")
+dstp = readtp(year, lats_, lons_=lons_[idx])
+
+
+def gettp(coords_, dstp=dstp):
+    # Get the data for the corresponding grid cell
+    return dstp.sel(lat=coords_[0], lon=coords_[1], method="nearest").tp.item()
+
+
+# Apply the function to get the total precipation dataset
+# for all the grid points
+tp = process_map(gettp, coords, max_workers=128, chunksize=len(coords) // 512)
+# Add it to the dataframe
+dfLand = dfLand.assign(tp=tp)
+del dstp, gettp, tp
+gc.collect()
+
+
+# ======================================================================= #
+# ------------------------- Total Precipitation ------------------------- #
+print("\t-------------\n\t2m Temperature\n\t-------------")
+dsblh = readblh(year, lats_, lons_=lons_[idx])
+
+
+def getblh(coords_, dsblh=dsblh):
+    # Get the data for the corresponding grid cell
+    return dsblh.sel(lat=coords_[0], lon=coords_[1], method="nearest").blh.item()
+
+
+# Apply the function to get the total precipation dataset
+# for all the grid points
+blh = process_map(getblh, coords, max_workers=128, chunksize=len(coords) // 512)
+# Add it to the dataframe
+dfLand = dfLand.assign(blh, blh)
+del dsblh, getblh, blh
+gc.collect()
+
+
 # Save it
-dfLand.to_parquet(f"{path_infer}/{year}_{idx}.parquet",
-                  compression="gzip", index=False)
+dfLand.to_parquet(f"{path_infer}/{year}_{idx}.parquet", compression="gzip", index=False)
+gc.collect()
